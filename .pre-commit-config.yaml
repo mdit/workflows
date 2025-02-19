@@ -1,0 +1,40 @@
+repos:
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v3.2.0
+    hooks:
+      - id: conventional-pre-commit
+        stages:
+          - commit-msg
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-json
+      - id: check-symlinks
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: no-commit-to-branch
+        args: ['--pattern', '^(?!((bug|bugfix|fix|feat|feature|chore|spike|hotfix|ci)\/[a-zA-Z0-9\-_]+)$).*$']
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.23
+    hooks:
+      - id: shellcheck
+  - repo: https://github.com/trussworks/pre-commit-hooks
+    rev: v1.1.1
+    hooks:
+      - id: markdown-toc
+        files: ^README\.md$
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.6
+    hooks:
+      - id: codespell
+        name: codespell
+        description: Checks for common misspellings in text files.
+        entry: codespell -w
+  - repo: local
+    hooks:
+      - id: action-docs
+        name: Generate README with action-docs
+        entry: npx action-docs --no-banner --update-readme
+        language: system
