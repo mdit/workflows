@@ -1,0 +1,45 @@
+{
+  "branches": [
+    "main",
+    "master"
+  ],
+  "plugins": [
+    [
+    "@semantic-release/commit-analyzer",
+    {
+      "preset": "angular",
+      "releaseRules": [
+        { "type": "ci", "scope": "deploy", "release": "patch" },
+        { "type": "chore", "scope": "deploy", "release": "patch" },
+        { "type": "refactor", "release": "minor" },
+        { "type": "style", "release": "patch" },
+        { "scope": "no-release", "release": false }
+      ],
+      "parserOpts": {
+        "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]
+      }
+    }
+  ],
+  [
+    "@semantic-release/release-notes-generator",
+    {
+      "preset": "angular",
+      "parserOpts": {
+        "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES", "BREAKING"]
+      },
+      "writerOpts": {
+        "commitsSort": ["subject", "scope"]
+      }
+    }
+  ],
+  [
+    "@semantic-release/exec",
+    {
+      "verifyConditionsCmd": "echo NEW_RELEASE_PUBLISHED=false > outputs.env",
+      "verifyReleaseCmd": "$GITHUB_ACTION_PATH/outputs.sh ${nextRelease.version} ${nextRelease.type}",
+      "successCmd": "sed -i 's/NEW_RELEASE_PUBLISHED=false/NEW_RELEASE_PUBLISHED=true/' outputs.env"
+    }
+  ],
+  "@semantic-release/github"
+  ]
+}
