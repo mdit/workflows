@@ -1,0 +1,88 @@
+---
+name: Semantic Release
+description: This action runs [Semantic Release](https://github.com/semantic-release/semantic-release), it leverages various plugins to analyse commits, generate release notes and create GitHub Releases.
+
+inputs:
+  node-version:
+    description: "The version Node to use e.g. `22, 22.4.1, >=18, lts/* latest`"
+    required: false
+    default: "lts/*"
+  dry-run:
+    description: "Flag to indicate whether Semantic Release is ran in `dry-run` mode"
+    required: false
+    default: "false"
+outputs:
+  new-release-published:
+    description: "Either `true` if a release has been successfully published or `false` if not"
+    value: ${{ steps.set-outputs.outputs.new-release-published }}
+  release-version:
+    description: "The new releases full semantic version, e.g. `2.3.1`"
+    value: ${{ steps.set-outputs.outputs.release-version }}
+  release-major-version:
+    description: "The new releases major version number, e.g. `2`"
+    value: ${{ steps.set-outputs.outputs.release-major-version }}
+  release-minor-version:
+    description: "The new releases minor version number, e.g. `3`"
+    value: ${{ steps.set-outputs.outputs.release-minor-version }}
+  release-patch-version:
+    description: "The new releases patch version number, e.g. `1`"
+    value: ${{ steps.set-outputs.outputs.release-patch-version }}
+  release-type:
+    description: "The semver type of the release, e.g. `major`, `minor`, `patch`"
+    value: ${{ steps.set-outputs.outputs.release-type }}
+runs:
+  using: "composite"
+  steps:
+    - name: Copy package.json
+      shell: bash
+      run: |
+        if [ "${{ github.repository }}" != "mdit/workflows" ]; then
+          cp $GITHUB_ACTION_PATH/package.json $GITHUB_WORKSPACE/package.json
+        fi
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Install Dependencies
+      shell: bash
+      run: npm install
+
+    - name: Verify dependencies
+      shell: bash
+      run: npm audit signatures
+
+    - name: Semantic Release
+      shell: bash
+      run: |
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          echo "Running in dry-run mode on pull request for branch ${{ github.head_ref }}"
+          unset GITHUB_ACTIONS
+          npx semantic-release --extends $GITHUB_ACTION_PATH/.releaserc.json --no-ci --dry-run --branches "${{ github.head_ref }}"
+        elif [ "${{ inputs.dry-run }}" = "true" ]; then
+          echo "Running in dry-run mode"
+          npx semantic-release --extends $GITHUB_ACTION_PATH/.releaserc.json --dry-run
+        else
+          npx semantic-release --extends $GITHUB_ACTION_PATH/.releaserc.json
+        fi
+
+    - name: Set Environment Variables
+      shell: bash
+      run: |
+        if [ -f outputs.env ]; then
+          cat outputs.env >> "$GITHUB_ENV"
+        else
+          echo "WARNING: No outputs.env found"
+        fi
+
+    - name: Set Outputs
+      shell: bash
+      id: set-outputs
+      run: |
+        echo "new-release-published=$NEW_RELEASE_PUBLISHED" >> "$GITHUB_OUTPUT"
+        echo "release-version=$RELEASE_VERSION" >> "$GITHUB_OUTPUT"
+        echo "release-major-version=$RELEASE_MAJOR_VERSION" >> "$GITHUB_OUTPUT"
+        echo "release-minor-version=$RELEASE_MINOR_VERSION" >> "$GITHUB_OUTPUT"
+        echo "release-patch-version=$RELEASE_PATCH_VERSION" >> "$GITHUB_OUTPUT"
+        echo "release-type=$RELEASE_TYPE" >> "$GITHUB_OUTPUT"
