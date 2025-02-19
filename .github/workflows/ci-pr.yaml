@@ -1,0 +1,47 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow
+name: ci-pr
+
+on:
+  pull_request:
+    branches: [ main ]
+    types:
+    - opened
+    - synchronize
+    - labeled
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: Test Semantic Release
+        id: semantic-release-dry-run
+        uses: ./
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          dry-run: true
+
+      - name: Test Semantic Release Outputs
+        run: |
+          echo "Testing Environment Variables"
+          echo "$RELEASE_VERSION"
+          echo "$RELEASE_TYPE"
+          echo "$NEW_RELEASE_PUBLISHED"
+
+          echo "Testing Outputs"
+          echo ${{ steps.semantic-release-dry-run.outputs.release-version }}
+          echo ${{ steps.semantic-release-dry-run.outputs.release-type }}
+          echo ${{ steps.semantic-release-dry-run.outputs.new-release-published }}
