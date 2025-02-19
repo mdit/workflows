@@ -1,0 +1,32 @@
+name: ci-release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Release
+        id: semantic-release
+        uses: CivicaActions/semantic-release@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Successfully Published Release
+        if: steps.semantic-release.outputs.new-release-published == 'true'
+        run: echo "Successfully published $RELEASE_VERSION release!"
