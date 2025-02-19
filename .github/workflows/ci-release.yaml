@@ -23,7 +23,7 @@ jobs:
 
       - name: Release
         id: semantic-release
-        uses: mdit/semantic-release@main
+        uses: mdit/workflows@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -19,8 +19,8 @@ Checks
 <!-- Mark all relevant with an "x". -->
 - [ ] You have added meaningful Unit tests
 - [ ] You have added meaningful Integration tests
-- [ ] You have added Acceptance tests based on the Acceptance Criteria (if there isn't any AC then determine what AC to add to ticket)
-- [ ] You have done an end to end test to ensure your changes doesn't have any negative effects on other parts of the system
+- [ ] You have added Acceptance tests based on the Acceptance Criteria
+- [ ] You have done an end to end test on your changes
 
 Other Information
 <!-- Add any other helpful information that may be needed here. -->
